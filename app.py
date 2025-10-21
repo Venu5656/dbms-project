@@ -5,9 +5,17 @@ from flask import Flask, request, jsonify, render_template, session, redirect, u
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import func
-from werkzeug.security import check_password_hash
-from models import db, User, Goal, Transaction, SavingsRule, ExpenseCategory, UserSession
-from config import Config
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# Import models and config
+try:
+    from models import db, User, Goal, Transaction, SavingsRule, ExpenseCategory, UserSession
+    from config_fixed import config as Config
+    print("Using fixed config")
+except ImportError:
+    # Fallback for local development
+    from config import Config
+    from models import db, User, Goal, Transaction, SavingsRule, ExpenseCategory, UserSession
 
 # Initialize Flask app
 app = Flask(__name__)
