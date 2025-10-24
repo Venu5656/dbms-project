@@ -1,10 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import CheckConstraint, JSON
+from sqlalchemy import CheckConstraint, JSON, event
 from datetime import datetime
-
-# Initialize SQLAlchemy
-db = SQLAlchemy()
+from extensions import db
 
 # Association table for many-to-many relationship between users and goals
 user_goals = db.Table('user_goals',
@@ -24,6 +21,7 @@ class User(db.Model):
     goals = db.relationship('Goal', secondary=user_goals, backref=db.backref('users', lazy=True))
     transactions = db.relationship('Transaction', backref='user', lazy=True)
     savings_rules = db.relationship('SavingsRule', backref='user', lazy=True)
+    activity_logs = db.relationship('ActivityLog', backref='user', lazy=True, cascade='all, delete-orphan')
 
 class Goal(db.Model):
     __tablename__ = 'goals'
@@ -120,6 +118,33 @@ class ExpenseCategory(db.Model):
             'user_id': self.user_id,
             'category_name': self.category_name,
             'is_default': self.is_default
+        }
+
+# Activity Logs
+class ActivityLog(db.Model):
+    __tablename__ = 'activity_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    endpoint = db.Column(db.String(255), nullable=False)
+    method = db.Column(db.String(10), nullable=False)
+    status_code = db.Column(db.Integer)
+    ip_address = db.Column(db.String(50))
+    user_agent = db.Column(db.Text)
+    request_data = db.Column(JSON)
+    response_data = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'endpoint': self.endpoint,
+            'method': self.method,
+            'status_code': self.status_code,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 # SESSIONS (simple demo)

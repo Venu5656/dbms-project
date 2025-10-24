@@ -1,30 +1,35 @@
 import os
 from datetime import datetime, timedelta
 from decimal import Decimal
-from flask import Flask, request, jsonify, render_template, session, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask import Flask, request, jsonify, render_template, session, redirect, url_for, g
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
+from middleware import log_activity, setup_activity_logging
+from extensions import db, migrate
+from models import User, Goal, Transaction, SavingsRule, ActivityLog, ExpenseCategory, UserSession
 
-# Import models and config
+# Import config
 try:
-    from models import db, User, Goal, Transaction, SavingsRule, ExpenseCategory, UserSession
     from config_fixed import config as Config
     print("Using fixed config")
 except ImportError:
-    # Fallback for local development
+    # Fallback to local development
     from config import Config
-    from models import db, User, Goal, Transaction, SavingsRule, ExpenseCategory, UserSession
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
 
-# Initialize the database
+# Import models after db is defined
+from models import User, Goal, Transaction, SavingsRule, ExpenseCategory, UserSession, ActivityLog
+
+# Initialize extensions
 db.init_app(app)
-migrate = Migrate(app, db)
+migrate.init_app(app, db)
+
+# Set up activity logging
+setup_activity_logging(app)
 
 # Create tables if they don't exist (for local development)
 with app.app_context():
@@ -81,6 +86,7 @@ def debug_users():
     } for u in users])
 
 @app.route('/api/goals', methods=['GET'])
+@log_activity
 def get_goals():
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
@@ -97,6 +103,7 @@ def get_goals():
     } for g in goals])
 
 @app.route('/api/transactions', methods=['GET'])
+@log_activity
 def get_transactions():
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
@@ -105,6 +112,7 @@ def get_transactions():
     return jsonify([t.to_dict() for t in transactions])
 
 @app.route('/api/savings-rules', methods=['GET'])
+@log_activity
 def get_savings_rules():
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
@@ -113,6 +121,7 @@ def get_savings_rules():
     return jsonify([r.to_dict() for r in rules])
 
 @app.route('/api/goals/create', methods=['POST'])
+@log_activity
 def create_goal():
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
@@ -136,6 +145,7 @@ def create_goal():
     return jsonify({"message": "Goal created successfully", "goal_id": goal.id}), 201
 
 @app.route('/api/rules/create', methods=['POST'])
+@log_activity
 def create_rule():
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
@@ -160,6 +170,7 @@ def create_rule():
 
 # Habit reward endpoint
 @app.route('/api/habit/<int:rule_id>/log', methods=['POST'])
+@log_activity
 def log_habit(rule_id):
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
@@ -215,6 +226,7 @@ def recurring_run():
 
 # Undo a transaction
 @app.route('/api/transactions/<int:tx_id>/undo', methods=['POST'])
+@log_activity
 def undo(tx_id):
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
