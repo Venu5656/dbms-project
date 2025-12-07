@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Management - Milestone</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .goal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .form-row input {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: #eef2ff;
+            color: #4338ca;
+        }
+        .charts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .chart-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 180px;
+            overflow: hidden;
+        }
+        .range-buttons {
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .range-buttons button {
+            border-radius: 999px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            padding: 4px 10px;
+            margin-right: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .range-buttons button.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: #fff;
+        }
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header-row">
+                <div>
+                    <div class="goal-title" id="goalTitle">Goal</div>
+                    <div id="goalSubtitle" style="color:#666;font-size:13px;margin-top:4px;"></div>
+                </div>
+                <a href="/" class="back-link">← Back to dashboard</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Add Money to Goal</div>
+            <form id="contributeForm">
+                <div class="form-row">
+                    <input type="number" step="0.01" min="0" name="amount" placeholder="Amount (e.g., 25.00)" required>
+                    <select name="investment_type" required>
+                        <option value="manual">Manual</option>
+                        <option value="guilty_pleasure_tax">Guilty Pleasure</option>
+                        <option value="recurring">Recurring</option>
+                        <option value="habit_reward">Habit Reward</option>
+                    </select>
+                    <button type="submit" class="btn-primary">Add Contribution</button>
+                </div>
+            </form>
+            <div id="contributeMessage" style="margin-top:10px;font-size:13px;color:#2e7d32;"></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Transaction History</div>
+            <div id="transactionsContainer">Loading...</div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Goal Analytics</div>
+            <div class="charts-grid">
+                <div>
+                    <div class="chart-card-title">Contributions Over Time</div>
+                    <div class="range-buttons">
+                        <button type="button" data-range="7" class="active">Last week</button>
+                        <button type="button" data-range="30">Last month</button>
+                        <button type="button" data-range="90">Last 3 months</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <div class="chart-card-title">Breakdown by Transaction Type</div>
+                    <div class="chart-container">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const goalId = {{ goal_id }};
+
+        let timelineChart = null;
+        let typeChart = null;
+        let allTransactions = [];
+        let currentRangeDays = 7;
+
+        async function loadGoal() {
+            try {
+                const res = await fetch(`/api/goals/${goalId}`);
+                if (!res.ok) return;
+                const g = await res.json();
+                document.getElementById('goalTitle').textContent = g.name;
+                const subtitle = `Saved $${g.current_amount.toFixed(2)} of $${g.target_amount.toFixed(2)} (${g.progress.toFixed(0)}%)`;
+                document.getElementById('goalSubtitle').innerHTML = `<span class="pill">${g.savings_pace || 'Moderate'}</span> &nbsp; ${subtitle}`;
+            } catch (e) {
+                console.error('Error loading goal', e);
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const res = await fetch(`/api/goals/${goalId}/transactions`);
+                if (!res.ok) {
+                    document.getElementById('transactionsContainer').textContent = 'Error loading transactions.';
+                    return;
+                }
+                const txs = await res.json();
+                allTransactions = txs;
+                if (!txs.length) {
+                    document.getElementById('transactionsContainer').textContent = 'No transactions yet.';
+                    updateCharts([]);
+                    return;
+                }
+                let html = '<table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th></tr></thead><tbody>';
+                txs.forEach(t => {
+                    const dt = t.created_at ? new Date(t.created_at) : null;
+                    const dateStr = dt ? dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+                    html += `<tr>
+                        <td>${dateStr}</td>
+                        <td>${t.transaction_type}</td>
+                        <td>$${t.amount.toFixed(2)}</td>
+                        <td>${t.description || ''}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                document.getElementById('transactionsContainer').innerHTML = html;
+
+                updateCharts(txs);
+            } catch (e) {
+                console.error('Error loading transactions', e);
+                document.getElementById('transactionsContainer').textContent = 'Error loading transactions.';
+            }
+        }
+
+        function updateCharts(txsSource) {
+            const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
+            const ctxType = document.getElementById('typeChart').getContext('2d');
+
+            const now = new Date();
+
+            // Filter by selected range (days back from now)
+            const filtered = (txsSource || []).filter(t => {
+                if (!t.created_at) return false;
+                const dt = new Date(t.created_at);
+                const diffDays = (now - dt) / (1000 * 60 * 60 * 24);
+                return diffDays <= currentRangeDays;
+            });
+
+            // Prepare timeline data (sorted by date, cumulative sum)
+            const sorted = [...filtered].sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+            const labels = [];
+            const cumulative = [];
+            let running = 0;
+            sorted.forEach(t => {
+                const dt = t.created_at ? new Date(t.created_at) : null;
+                if (!dt || typeof t.amount !== 'number') return;
+                running += t.amount;
+                labels.push(dt.toLocaleDateString());
+                cumulative.push(running);
+            });
+
+            // Prepare type breakdown data
+            const typeTotals = {};
+            (txsSource || []).forEach(t => {
+                if (typeof t.amount !== 'number') return;
+                const type = t.transaction_type || 'other';
+                typeTotals[type] = (typeTotals[type] || 0) + t.amount;
+            });
+            const typeLabels = Object.keys(typeTotals);
+            const typeValues = Object.values(typeTotals);
+
+            // Destroy existing charts if present
+            if (timelineChart) {
+                timelineChart.destroy();
+            }
+            if (typeChart) {
+                typeChart.destroy();
+            }
+
+            // Create timeline chart
+            timelineChart = new Chart(ctxTimeline, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Cumulative Contributions ($)',
+                        data: cumulative,
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        tension: 0.2,
+                        fill: true,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 50,
+                            ticks: {
+                                callback: (value) => '$' + value
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Create type breakdown pie chart
+            typeChart = new Chart(ctxType, {
+                type: 'pie',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeValues,
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f57c00', '#2e7d32', '#c62828', '#6d4c41'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('contributeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const res = await fetch(`/api/goals/${goalId}/contribute`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    const result = await res.json();
+                    document.getElementById('contributeMessage').textContent = 'Contribution added successfully.';
+                    form.reset();
+                    loadGoal();
+                    loadTransactions();
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    document.getElementById('contributeMessage').textContent = err.error || 'Error adding contribution.';
+                    document.getElementById('contributeMessage').style.color = '#c62828';
+                }
+            } catch (e) {
+                console.error('Error contributing', e);
+                document.getElementById('contributeMessage').textContent = 'Error adding contribution.';
+                document.getElementById('contributeMessage').style.color = '#c62828';
+            }
+        });
+
+        // Range buttons for timeline chart
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.range-buttons button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.range-buttons button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentRangeDays = parseInt(btn.getAttribute('data-range'), 10) || 7;
+                    updateCharts(allTransactions);
+                });
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadGoal();
+            loadTransactions();
+        });
+    </script>
+</body>
+</html>

@@ -8,13 +8,8 @@ from middleware import log_activity, setup_activity_logging
 from extensions import db, migrate
 from models import User, Goal, Transaction, SavingsRule, ActivityLog, ExpenseCategory, UserSession
 
-# Import config
-try:
-    from config_fixed import config as Config
-    print("Using fixed config")
-except ImportError:
-    # Fallback to local development
-    from config import Config
+# Import config (single source of truth)
+from config import Config
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -75,6 +70,14 @@ def index():
         return redirect(url_for('login'))
     return render_template('index.html')
 
+@app.route('/goals/<int:goal_id>')
+def goal_detail(goal_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    goal = Goal.query.filter_by(id=goal_id, user_id=session['user_id']).first_or_404()
+    return render_template('goal.html', goal_id=goal.id)
+
 @app.route('/debug/users')
 def debug_users():
     """Debug endpoint to check users in database"""
@@ -99,8 +102,29 @@ def get_goals():
         'current_amount': float(g.current_amount) if g.current_amount else 0.0,
         'progress': float(g.current_amount / g.target_amount * 100) if g.target_amount else 0.0,
         'description': g.description,
-        'image_url': g.image_url
+        'image_url': g.image_url,
+        'savings_pace': g.savings_pace
     } for g in goals])
+
+@app.route('/api/goals/<int:goal_id>', methods=['GET'])
+@log_activity
+def get_goal(goal_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    goal = Goal.query.filter_by(id=goal_id, user_id=session['user_id']).first_or_404()
+    return jsonify({
+        'id': goal.id,
+        'name': goal.name,
+        'target_amount': float(goal.target_amount) if goal.target_amount else None,
+        'current_amount': float(goal.current_amount) if goal.current_amount else 0.0,
+        'progress': float(goal.current_amount / goal.target_amount * 100) if goal.target_amount else 0.0,
+        'description': goal.description,
+        'image_url': goal.image_url,
+        'savings_pace': goal.savings_pace,
+        'created_at': goal.created_at.isoformat() if goal.created_at else None,
+        'completed_at': goal.completed_at.isoformat() if goal.completed_at else None
+    })
 
 @app.route('/api/transactions', methods=['GET'])
 @log_activity
@@ -109,6 +133,16 @@ def get_transactions():
         return jsonify({"error": "Not authenticated"}), 401
     
     transactions = Transaction.query.filter_by(user_id=session['user_id']).order_by(Transaction.created_at.desc()).limit(50).all()
+    return jsonify([t.to_dict() for t in transactions])
+
+@app.route('/api/goals/<int:goal_id>/transactions', methods=['GET'])
+@log_activity
+def get_goal_transactions(goal_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    goal = Goal.query.filter_by(id=goal_id, user_id=session['user_id']).first_or_404()
+    transactions = Transaction.query.filter_by(user_id=session['user_id'], goal_id=goal.id).order_by(Transaction.created_at.asc()).all()
     return jsonify([t.to_dict() for t in transactions])
 
 @app.route('/api/savings-rules', methods=['GET'])
@@ -167,6 +201,66 @@ def create_rule():
     db.session.commit()
     
     return jsonify({"message": "Rule created successfully", "rule_id": rule.id}), 201
+
+@app.route('/api/rules/<int:rule_id>', methods=['PUT', 'PATCH'])
+@log_activity
+def update_rule(rule_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    rule = SavingsRule.query.filter_by(id=rule_id, user_id=session['user_id']).first()
+    if not rule:
+        return jsonify({"error": "Rule not found"}), 404
+
+    data = request.get_json() or {}
+
+    if 'rule_name' in data:
+        rule.rule_name = data['rule_name']
+    if 'amount' in data and data['amount'] is not None:
+        rule.amount = decimalize(data['amount'])
+    if 'frequency' in data:
+        rule.frequency = data['frequency'] or None
+    if 'trigger_category' in data:
+        rule.trigger_category = data['trigger_category'] or None
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Rule updated successfully",
+        "rule": rule.to_dict()
+    })
+
+@app.route('/api/goals/<int:goal_id>/contribute', methods=['POST'])
+@log_activity
+def contribute_to_goal(goal_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    goal = Goal.query.filter_by(id=goal_id, user_id=session['user_id']).first_or_404()
+    data = request.get_json() or {}
+
+    amount = data.get('amount')
+    investment_type = data.get('investment_type') or 'manual'
+
+    if amount is None:
+        return jsonify({"error": "Amount is required"}), 400
+
+    amount_dec = decimalize(amount)
+    if amount_dec <= Decimal('0'):
+        return jsonify({"error": "Amount must be positive"}), 400
+
+    tx_type = investment_type
+
+    add_tx(goal.id, amount_dec, tx_type, description=None, user_id=session['user_id'])
+    apply_saving_to_goal(goal, amount_dec)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Contribution added",
+        "goal_id": goal.id,
+        "current_amount": float(goal.current_amount),
+        "progress": float(goal.current_amount / goal.target_amount * 100) if goal.target_amount else 0.0
+    }), 201
 
 # Habit reward endpoint
 @app.route('/api/habit/<int:rule_id>/log', methods=['POST'])
@@ -256,6 +350,123 @@ def undo(tx_id):
     })
 
 # Authentication routes (simplified for demo)
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        error = None
+
+        if not username or not email or not password:
+            error = 'All fields are required.'
+        elif password != confirm_password:
+            error = 'Passwords do not match.'
+        else:
+            existing_user = User.query.filter(
+                (User.username == username) | (User.email == email)
+            ).first()
+            if existing_user:
+                error = 'Username or email already in use.'
+
+        if error:
+            return f"<p>{error}</p>", 400
+
+        user = User(
+            username=username,
+            email=email,
+            password_hash=generate_password_hash(password)
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        session['user_id'] = user.id
+        return redirect(url_for('index'))
+
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Register - Milestone Savings App</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            .auth-container {
+                background: white;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                width: 340px;
+            }
+            h2 {
+                margin-top: 0;
+                color: #333;
+                text-align: center;
+            }
+            input {
+                width: 100%;
+                padding: 12px;
+                margin: 10px 0;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                box-sizing: border-box;
+                font-size: 14px;
+            }
+            button {
+                width: 100%;
+                padding: 12px;
+                background: #667eea;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-top: 10px;
+            }
+            button:hover {
+                background: #5568d3;
+            }
+            .switch-link {
+                margin-top: 15px;
+                font-size: 13px;
+                text-align: center;
+            }
+            .switch-link a {
+                color: #667eea;
+                text-decoration: none;
+            }
+            .switch-link a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="auth-container">
+            <h2>🎯 Create Account</h2>
+            <form method="post">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+            <div class="switch-link">
+                Already have an account? <a href="/login">Log in</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -346,6 +557,24 @@ def login():
                 border-radius: 5px;
                 font-size: 12px;
                 color: #666;
+                text-align: center;
+            }
+            .secondary-btn {
+                display: inline-block;
+                padding: 10px 18px;
+                margin-top: 8px;
+                border-radius: 5px;
+                border: 1px solid #667eea;
+                background: #fff;
+                color: #667eea;
+                font-size: 13px;
+                font-weight: 600;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            .secondary-btn:hover {
+                background: #667eea;
+                color: #fff;
             }
         </style>
     </head>
@@ -358,9 +587,8 @@ def login():
                 <button type="submit">Login</button>
             </form>
             <div class="hint">
-                <strong>Test Account:</strong><br>
-                Username: gowrisankar<br>
-                Password: pass
+                Don't have an account?<br>
+                <a class="secondary-btn" href="/register">Create Account</a>
             </div>
         </div>
     </body>
@@ -378,6 +606,26 @@ def init_db():
     """Initialize the database."""
     db.create_all()
     print('Initialized the database.')
+
+@app.cli.command('cleanup-manual-contributions')
+def cleanup_manual_contributions():
+    """Remove legacy manual_contribution transactions and adjust goal balances."""
+    with app.app_context():
+        txs = Transaction.query.filter_by(transaction_type='manual_contribution').all()
+        count = len(txs)
+
+        for tx in txs:
+            goal = Goal.query.get(tx.goal_id)
+            if goal and tx.amount is not None:
+                try:
+                    goal.current_amount = (goal.current_amount or Decimal('0')) - tx.amount
+                except Exception:
+                    # Fallback without Decimal if needed
+                    goal.current_amount = goal.current_amount - tx.amount
+
+        Transaction.query.filter_by(transaction_type='manual_contribution').delete(synchronize_session=False)
+        db.session.commit()
+        print(f"Removed {count} manual_contribution transactions and updated goal balances.")
 
 # Error handlers
 @app.errorhandler(404)

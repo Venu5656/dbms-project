@@ -105,6 +105,8 @@
             border-radius: 10px;
             padding: 20px;
             transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
         }
         
         .goal-card:hover {
@@ -153,6 +155,35 @@
         .goal-amounts .current {
             color: #667eea;
             font-weight: bold;
+        }
+        .goal-card-footer {
+            margin-top: auto;
+            text-align: right;
+        }
+        .goal-rules {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+        }
+        .goal-rules-title {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        .goal-rule-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .goal-rule-main {
+            color: #444;
+        }
+        .goal-rule-secondary {
+            color: #777;
+            font-size: 12px;
         }
         
         .rules-section {
@@ -372,11 +403,53 @@
         
         .rule-type-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 4px 8px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            text-transform: uppercase;
+            text-transform: none;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid transparent;
+            transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+        }
+        .rule-type-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            border-color: rgba(0,0,0,0.04);
+        }
+        .rule-type-badge::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 50%;
+            bottom: 130%;
+            transform: translateX(-50%);
+            background: rgba(33, 33, 33, 0.95);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            transform-origin: center bottom;
+        }
+        .rule-type-badge::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 120%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(33, 33, 33, 0.95) transparent transparent transparent;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        .rule-type-badge:hover::after,
+        .rule-type-badge:hover::before {
+            opacity: 1;
         }
         
         .rule-type-badge.recurring {
@@ -559,6 +632,41 @@
             </form>
         </div>
     </div>
+
+    <!-- Edit Rule Modal -->
+    <div id="editRuleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Savings Rule</h2>
+                <button class="close-btn" onclick="closeEditRuleModal()">&times;</button>
+            </div>
+            <form id="editRuleForm" onsubmit="updateRule(event)">
+                <input type="hidden" name="rule_id" id="editRuleId">
+                <div class="form-group">
+                    <label>Rule Name *</label>
+                    <input type="text" name="rule_name" id="editRuleName" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount ($) *</label>
+                    <input type="number" name="amount" id="editRuleAmount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Frequency (for recurring)</label>
+                    <select name="frequency" id="editRuleFrequency">
+                        <option value="">-- None --</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Trigger Category (for guilty pleasure)</label>
+                    <input type="text" name="trigger_category" id="editRuleCategory" placeholder="e.g., Food Delivery, Entertainment">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Save Changes</button>
+            </form>
+        </div>
+    </div>
     
     <!-- Create Rule Modal -->
     <div id="createRuleModal" class="modal">
@@ -627,54 +735,100 @@
     </div>
     
     <script>
+        let cachedGoals = [];
+        let cachedRules = [];
+        let rulesByGoal = {};
+
         // Fetch and display goals
         async function loadGoals() {
             try {
                 const response = await fetch('/api/goals');
                 const goals = await response.json();
-                
-                const container = document.getElementById('goalsContainer');
-                
-                if (goals.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><h3>No goals yet</h3><p>Start by creating your first savings goal!</p></div>';
-                    return;
-                }
-                
-                let totalSaved = 0;
-                let html = '<div class="goals-grid">';
-                
-                goals.forEach(goal => {
-                    totalSaved += goal.current_amount;
-                    const progress = Math.min(goal.progress, 100);
-                    
-                    html += `
-                        <div class="goal-card">
-                            <div class="pace-badge ${goal.savings_pace || 'Moderate'}">${goal.savings_pace || 'Moderate'}</div>
-                            <h3>${goal.name}</h3>
-                            ${goal.description ? `<div class="description">${goal.description}</div>` : ''}
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${progress}%">
-                                    ${progress.toFixed(0)}%
-                                </div>
-                            </div>
-                            <div class="goal-amounts">
-                                <span class="current">$${goal.current_amount.toFixed(2)}</span>
-                                <span class="target">/ $${goal.target_amount.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-                container.innerHTML = html;
-                
-                // Update stats
-                document.getElementById('totalGoals').textContent = goals.length;
-                document.getElementById('totalSaved').textContent = `$${totalSaved.toFixed(2)}`;
+                cachedGoals = goals;
+                renderGoals();
             } catch (error) {
                 console.error('Error loading goals:', error);
                 document.getElementById('goalsContainer').innerHTML = '<div class="empty-state"><h3>Error loading goals</h3></div>';
             }
+        }
+
+        function renderGoals() {
+            const goals = cachedGoals || [];
+            const container = document.getElementById('goalsContainer');
+
+            if (goals.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>No goals yet</h3><p>Start by creating your first savings goal!</p></div>';
+                return;
+            }
+
+            let totalSaved = 0;
+            let html = '<div class="goals-grid">';
+
+            goals.forEach(goal => {
+                totalSaved += goal.current_amount;
+                const progress = Math.min(goal.progress, 100);
+                const goalRules = (rulesByGoal[goal.id] || []).slice(0, 3);
+
+                html += `
+                    <div class="goal-card">
+                        <div class="pace-badge ${goal.savings_pace || 'Moderate'}">${goal.savings_pace || 'Moderate'}</div>
+                        <h3>${goal.name}</h3>
+                        ${goal.description ? `<div class="description">${goal.description}</div>` : ''}
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%">
+                                ${progress.toFixed(0)}%
+                            </div>
+                        </div>
+                        <div class="goal-amounts">
+                            <span class="current">$${goal.current_amount.toFixed(2)}</span>
+                            <span class="target">/ $${goal.target_amount.toFixed(2)}</span>
+                        </div>
+                        ${goalRules.length ? `
+                        <div class="goal-rules">
+                            <div class="goal-rules-title">Savings rules for this goal</div>
+                            ${goalRules.map(r => {
+                                const typeLabel = r.rule_type.replace('_', ' ');
+                                const typeIcon = r.rule_type === 'recurring'
+                                    ? '💰'
+                                    : r.rule_type === 'habit_reward'
+                                        ? '🎯'
+                                        : r.rule_type === 'guilty_pleasure_tax'
+                                            ? '🍕'
+                                            : '💵';
+                                const base = r.rule_type === 'recurring'
+                                    ? `${r.frequency || ''} recurring`
+                                    : r.rule_type === 'habit_reward'
+                                        ? 'per completion'
+                                        : r.rule_type === 'guilty_pleasure_tax'
+                                            ? `per ${r.trigger_category || 'purchase'}`
+                                            : '';
+                                const desc = [`$${r.amount.toFixed(2)}`, base].filter(Boolean).join(' ');
+                                return `
+                                    <div class="goal-rule-row">
+                                        <div>
+                                            <div class="goal-rule-main">${r.rule_name}</div>
+                                            <div class="goal-rule-secondary">${desc}</div>
+                                        </div>
+                                        <span class="rule-type-badge ${r.rule_type}" data-tooltip="${typeLabel}" title="${typeLabel}">${typeIcon}</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                            ${rulesByGoal[goal.id] && rulesByGoal[goal.id].length > 3 ? `<div class="goal-rule-secondary">+ ${rulesByGoal[goal.id].length - 3} more rule(s)</div>` : ''}
+                        </div>
+                        ` : ''}
+                        <div class="goal-card-footer">
+                            <button class="btn-secondary" onclick="window.location.href='/goals/${goal.id}'">Manage</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Update stats
+            document.getElementById('totalGoals').textContent = goals.length;
+            document.getElementById('totalSaved').textContent = `$${totalSaved.toFixed(2)}`;
         }
         
         // Fetch and display savings rules
@@ -682,35 +836,141 @@
             try {
                 const response = await fetch('/api/savings-rules');
                 const rules = await response.json();
-                
-                const container = document.getElementById('rulesContainer');
-                
-                if (rules.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><h3>No rules yet</h3><p>Create savings rules to automate your savings!</p></div>';
-                    return;
+                cachedRules = rules;
+
+                // Build map goal_id -> rules[]
+                const map = {};
+                rules.forEach(r => {
+                    if (!map[r.goal_id]) {
+                        map[r.goal_id] = [];
+                    }
+                    map[r.goal_id].push(r);
+                });
+                rulesByGoal = map;
+
+                renderRulesSection();
+                if (cachedGoals.length) {
+                    renderGoals();
                 }
-                
-                let html = '';
-                rules.forEach(rule => {
+            } catch (error) {
+                console.error('Error loading rules:', error);
+                document.getElementById('rulesContainer').innerHTML = '<div class="empty-state"><h3>Error loading rules</h3></div>';
+            }
+        }
+
+        function renderRulesSection() {
+            const rules = cachedRules || [];
+            const container = document.getElementById('rulesContainer');
+
+            if (!rules.length) {
+                container.innerHTML = '<div class="empty-state"><h3>No rules yet</h3><p>Create savings rules to automate your savings!</p></div>';
+                document.getElementById('activeRules').textContent = '0';
+                return;
+            }
+
+            let html = '';
+            const goalNameById = {};
+            (cachedGoals || []).forEach(g => { goalNameById[g.id] = g.name; });
+
+            Object.keys(rulesByGoal).forEach(goalId => {
+                const group = rulesByGoal[goalId];
+                if (!group || !group.length) return;
+                const name = goalNameById[goalId] || `Goal #${goalId}`;
+
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 8px; color: #333; font-size: 16px;">${name}</h3>
+                `;
+
+                group.forEach(rule => {
+                    const typeLabel = rule.rule_type.replace('_', ' ');
+                    const typeIcon = rule.rule_type === 'recurring'
+                        ? '💰'
+                        : rule.rule_type === 'habit_reward'
+                            ? '🎯'
+                            : rule.rule_type === 'guilty_pleasure_tax'
+                                ? '🍕'
+                                : '💵';
+                    const base = rule.rule_type === 'recurring'
+                        ? `${rule.frequency || ''} recurring`
+                        : rule.rule_type === 'habit_reward'
+                            ? 'per completion'
+                            : rule.rule_type === 'guilty_pleasure_tax'
+                                ? `per ${rule.trigger_category || 'purchase'}`
+                                : '';
+                    const desc = [`$${rule.amount.toFixed(2)}`, base].filter(Boolean).join(' ');
+
                     html += `
                         <div class="rule-item">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h4>${rule.rule_name}</h4>
-                                <span class="rule-type-badge ${rule.rule_type}">${rule.rule_type.replace('_', ' ')}</span>
-                            </div>
-                            <div class="rule-details">
-                                Amount: $${rule.amount.toFixed(2)}
-                                ${rule.frequency ? ` | Frequency: ${rule.frequency}` : ''}
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                <div>
+                                    <h4>${rule.rule_name}</h4>
+                                    <div class="rule-details">${desc}</div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span class="rule-type-badge ${rule.rule_type}" data-tooltip="${typeLabel}" title="${typeLabel}">${typeIcon}</span>
+                                    <button class="btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="openEditRuleModal(${rule.id})">Edit</button>
+                                </div>
                             </div>
                         </div>
                     `;
                 });
-                
-                container.innerHTML = html;
-                document.getElementById('activeRules').textContent = rules.length;
+
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+            document.getElementById('activeRules').textContent = rules.length;
+        }
+        
+        // Edit rule helpers
+        function openEditRuleModal(ruleId) {
+            const rule = (cachedRules || []).find(r => r.id === ruleId);
+            if (!rule) return;
+
+            document.getElementById('editRuleId').value = rule.id;
+            document.getElementById('editRuleName').value = rule.rule_name;
+            document.getElementById('editRuleAmount').value = rule.amount.toFixed(2);
+            document.getElementById('editRuleFrequency').value = rule.frequency || '';
+            document.getElementById('editRuleCategory').value = rule.trigger_category || '';
+
+            document.getElementById('editRuleModal').classList.add('active');
+        }
+
+        function closeEditRuleModal() {
+            document.getElementById('editRuleModal').classList.remove('active');
+            document.getElementById('editRuleForm').reset();
+        }
+
+        async function updateRule(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            const ruleId = data.rule_id;
+
+            try {
+                const response = await fetch(`/api/rules/${ruleId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        rule_name: data.rule_name,
+                        amount: data.amount,
+                        frequency: data.frequency,
+                        trigger_category: data.trigger_category
+                    })
+                });
+
+                if (response.ok) {
+                    closeEditRuleModal();
+                    await loadRules();
+                    await loadGoals();
+                    alert('Rule updated successfully!');
+                } else {
+                    alert('Error updating rule');
+                }
             } catch (error) {
-                console.error('Error loading rules:', error);
-                document.getElementById('rulesContainer').innerHTML = '<div class="empty-state"><h3>Error loading rules</h3></div>';
+                console.error('Error updating rule:', error);
+                alert('Error updating rule');
             }
         }
         
