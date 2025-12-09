@@ -4,6 +4,7 @@ from decimal import Decimal
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for, g
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from middleware import log_activity, setup_activity_logging
 from extensions import db, migrate
 from models import User, Goal, Transaction, SavingsRule, ActivityLog, ExpenseCategory, UserSession
@@ -15,6 +16,11 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key'
+
+# File uploads (for goal images)
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp'}
 
 # Import models after db is defined
 from models import User, Goal, Transaction, SavingsRule, ExpenseCategory, UserSession, ActivityLog
@@ -167,6 +173,29 @@ def get_transactions():
     
     transactions = Transaction.query.filter_by(user_id=session['user_id']).order_by(Transaction.created_at.desc()).limit(50).all()
     return jsonify([t.to_dict() for t in transactions])
+
+
+@app.route('/api/upload-goal-image', methods=['POST'])
+def upload_goal_image():
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    file = request.files.get('file')
+    if not file or file.filename == '':
+        return jsonify({"error": "No file uploaded"}), 400
+
+    filename = secure_filename(file.filename)
+    _, ext = os.path.splitext(filename)
+    ext = ext.lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return jsonify({"error": "Unsupported file type"}), 400
+
+    save_name = f"goal_{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}{ext}"
+    save_path = os.path.join(UPLOAD_FOLDER, save_name)
+    file.save(save_path)
+
+    url = url_for('static', filename=f'uploads/{save_name}')
+    return jsonify({"url": url}), 201
 
 @app.route('/api/goals/<int:goal_id>/transactions', methods=['GET'])
 @log_activity
