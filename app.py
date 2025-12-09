@@ -26,9 +26,21 @@ migrate.init_app(app, db)
 # Set up activity logging
 setup_activity_logging(app)
 
-# Create tables and seed a default demo user (for local development)
+# Create tables and seed a default demo user (for local and first-time deployments)
 with app.app_context():
     db.create_all()
+
+    # Ensure users.password_hash is wide enough for modern hashes in Postgres
+    try:
+        engine = db.engine
+        if engine.url.drivername.startswith("postgres"):
+            from sqlalchemy import text
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ALTER COLUMN password_hash TYPE VARCHAR(255);"))
+                conn.commit()
+    except Exception as e:
+        # Best-effort migration; it's okay if this fails (e.g. column already correct)
+        print(f"Password hash column migration skipped or failed: {e}")
 
     # Ensure a demo user exists for quick login
     demo_username = 'gowrisankar'
