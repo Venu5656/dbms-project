@@ -242,7 +242,6 @@ def create_goal():
 
 
 @app.route('/api/goals/<int:goal_id>/update', methods=['PUT', 'PATCH'])
-@log_activity
 def update_goal_api(goal_id):
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
@@ -290,7 +289,6 @@ def update_goal_api(goal_id):
 
 
 @app.route('/api/goals/<int:goal_id>/delete', methods=['DELETE'])
-@log_activity
 def delete_goal_api(goal_id):
     if 'user_id' not in session:
         return jsonify({"error": "Not authenticated"}), 401
