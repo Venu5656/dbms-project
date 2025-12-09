@@ -322,6 +322,66 @@
             animation: float-card 14s ease-in-out infinite;
         }
 
+        .goal-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .goal-menu-button {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.7);
+            background: rgba(15,23,42,0.85);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+        }
+
+        .goal-menu-button:hover {
+            color: #e5e7eb;
+            border-color: rgba(191,219,254,0.9);
+        }
+
+        .goal-menu-dropdown {
+            position: absolute;
+            top: 32px;
+            right: 14px;
+            min-width: 140px;
+            background: rgba(15,23,42,0.98);
+            border-radius: 10px;
+            border: 1px solid rgba(148,163,184,0.8);
+            box-shadow: 0 18px 40px rgba(15,23,42,0.95);
+            padding: 4px 0;
+            font-size: 13px;
+        }
+
+        .goal-menu-item {
+            padding: 7px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #e5e7eb;
+        }
+
+        .goal-menu-item:hover {
+            background: rgba(30,64,175,0.65);
+        }
+
+        .goal-menu-item.danger {
+            color: #fecaca;
+        }
+
+        .goal-menu-item.danger:hover {
+            background: rgba(127,29,29,0.8);
+        }
+
         .goal-image-wrapper {
             width: 100%;
             border-radius: 18px;
@@ -599,6 +659,21 @@
             overflow-y: auto;
             box-shadow: 0 28px 80px rgba(15,23,42,0.95);
             border: 1px solid rgba(148,163,184,0.7);
+        }
+
+        .edit-goal-image-preview {
+            margin-top: 8px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(148,163,184,0.6);
+            background: rgba(15,23,42,0.9);
+        }
+
+        .edit-goal-image-preview img {
+            display: block;
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
         }
         
         .modal-header {
@@ -996,6 +1071,65 @@
         </div>
     </div>
 
+    <!-- Edit Goal Modal -->
+    <div id="editGoalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Goal</h2>
+                <button class="close-btn" onclick="closeEditGoalModal()">&times;</button>
+            </div>
+            <form id="editGoalForm" onsubmit="submitEditGoal(event)">
+                <input type="hidden" name="goal_id" id="editGoalId">
+
+                <div class="form-group">
+                    <label>Goal Name *</label>
+                    <input type="text" name="name" id="editGoalName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Target Amount ($) *</label>
+                    <input type="number" name="target_amount" id="editGoalTarget" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" id="editGoalDescription" placeholder="What are you saving for?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Savings Pace *</label>
+                    <div class="pace-options" id="editGoalPaceOptions">
+                        <label class="pace-option">
+                            <input type="radio" name="edit_savings_pace" value="Conservative" required>
+                            <div class="pace-name">🐢 Conservative</div>
+                            <div class="pace-desc">Slow & steady</div>
+                        </label>
+                        <label class="pace-option">
+                            <input type="radio" name="edit_savings_pace" value="Moderate">
+                            <div class="pace-name">🚶 Moderate</div>
+                            <div class="pace-desc">Balanced approach</div>
+                        </label>
+                        <label class="pace-option">
+                            <input type="radio" name="edit_savings_pace" value="Aggressive">
+                            <div class="pace-name">🏃 Aggressive</div>
+                            <div class="pace-desc">Fast track</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Goal Image</label>
+                    <input type="file" name="image_file" id="editGoalImageFile" accept="image/*">
+                    <div class="edit-goal-image-preview" id="editGoalImagePreview" style="display:none; margin-top:10px;">
+                        <img id="editGoalImagePreviewImg" src="" alt="Current goal image">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%;">Save changes</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Edit Rule Modal -->
     <div id="editRuleModal" class="modal">
         <div class="modal-content">
@@ -1185,7 +1319,7 @@
                 const hasImage = goal.image_url && goal.image_url.trim() !== '';
 
                 html += `
-                    <div class="goal-card">
+                    <div class="goal-card" data-goal-id="${goal.id}">
                         ${hasImage ? `
                         <div class="goal-image-wrapper">
                             <img src="${goal.image_url}" alt="${goal.name} image" loading="lazy" />
@@ -1196,7 +1330,16 @@
                                 <h3>${goal.name}</h3>
                                 ${goal.description ? `<div class="description">${goal.description}</div>` : ''}
                             </div>
-                            <div class="pace-badge ${goal.savings_pace || 'Moderate'}">${goal.savings_pace || 'Moderate'}</div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div class="pace-badge ${goal.savings_pace || 'Moderate'}">${goal.savings_pace || 'Moderate'}</div>
+                                <div class="goal-card-actions">
+                                    <button type="button" class="goal-menu-button" onclick="toggleGoalMenu(event, ${goal.id})">⋯</button>
+                                    <div class="goal-menu-dropdown" id="goalMenu-${goal.id}" style="display:none;">
+                                        <div class="goal-menu-item" onclick="openEditGoal(${goal.id})">✏️ Edit goal</div>
+                                        <div class="goal-menu-item danger" onclick="deleteGoal(${goal.id})">🗑 Delete goal</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="goal-amounts">
                             <span class="current">$${goal.current_amount.toFixed(2)}</span>
@@ -1497,7 +1640,144 @@
                 alert('Error creating goal');
             }
         }
-        
+
+        // Goal card actions menu
+        function toggleGoalMenu(event, goalId) {
+            // Prevent the global click handler from immediately closing the menu
+            event.stopPropagation();
+            const menu = document.getElementById(`goalMenu-${goalId}`);
+            if (!menu) return;
+            const isVisible = menu.style.display === 'block';
+            // Close all other menus
+            document.querySelectorAll('.goal-menu-dropdown').forEach(m => {
+                m.style.display = 'none';
+            });
+            // Toggle this one
+            menu.style.display = isVisible ? 'none' : 'block';
+        }
+
+        // Close menus when clicking anywhere outside the actions area
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.goal-card-actions')) return;
+            document.querySelectorAll('.goal-menu-dropdown').forEach(m => {
+                m.style.display = 'none';
+            });
+        });
+
+        function openEditGoal(goalId) {
+            const goal = (cachedGoals || []).find(g => g.id === goalId);
+            if (!goal) return;
+
+            document.getElementById('editGoalId').value = goal.id;
+            document.getElementById('editGoalName').value = goal.name || '';
+            document.getElementById('editGoalTarget').value = goal.target_amount ? goal.target_amount.toFixed(2) : '';
+            document.getElementById('editGoalDescription').value = goal.description || '';
+
+            // Set pace radio
+            const pace = goal.savings_pace || 'Moderate';
+            document.querySelectorAll('#editGoalPaceOptions .pace-option').forEach(opt => {
+                const radio = opt.querySelector('input[type="radio"]');
+                if (radio && radio.value === pace) {
+                    radio.checked = true;
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+
+            // Image preview
+            const previewWrap = document.getElementById('editGoalImagePreview');
+            const previewImg = document.getElementById('editGoalImagePreviewImg');
+            if (goal.image_url) {
+                previewImg.src = goal.image_url;
+                previewWrap.style.display = 'block';
+            } else {
+                previewImg.src = '';
+                previewWrap.style.display = 'none';
+            }
+
+            document.getElementById('editGoalModal').classList.add('active');
+            document.getElementById(`goalMenu-${goalId}`).style.display = 'none';
+        }
+
+        function closeEditGoalModal() {
+            document.getElementById('editGoalModal').classList.remove('active');
+            document.getElementById('editGoalForm').reset();
+            document.getElementById('editGoalImagePreview').style.display = 'none';
+        }
+
+        async function submitEditGoal(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const goalId = formData.get('goal_id');
+            const data = {};
+
+            data.name = formData.get('name');
+            data.target_amount = formData.get('target_amount');
+            data.description = formData.get('description');
+
+            const paceRadio = document.querySelector('#editGoalPaceOptions input[type="radio"]:checked');
+            if (paceRadio) {
+                data.savings_pace = paceRadio.value;
+            }
+
+            const file = formData.get('image_file');
+
+            if (file && file.name) {
+                try {
+                    const uploadForm = new FormData();
+                    uploadForm.append('file', file);
+                    const uploadResp = await fetch('/api/upload-goal-image', {
+                        method: 'POST',
+                        body: uploadForm
+                    });
+                    if (uploadResp.ok) {
+                        const uploadData = await uploadResp.json();
+                        if (uploadData.url) {
+                            data.image_url = uploadData.url;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error uploading image (edit):', e);
+                }
+            }
+
+            try {
+                const resp = await fetch(`/api/goals/${goalId}/update`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if (resp.ok) {
+                    closeEditGoalModal();
+                    await loadGoals();
+                    alert('Goal updated successfully!');
+                } else {
+                    alert('Error updating goal');
+                }
+            } catch (e) {
+                console.error('Error updating goal:', e);
+                alert('Error updating goal');
+            }
+        }
+
+        async function deleteGoal(goalId) {
+            if (!confirm('Delete this goal? This will also deactivate its rules.')) return;
+            try {
+                const resp = await fetch(`/api/goals/${goalId}/delete`, { method: 'DELETE' });
+                if (resp.ok) {
+                    await loadGoals();
+                    await loadRules();
+                    alert('Goal deleted');
+                } else {
+                    alert('Error deleting goal');
+                }
+            } catch (e) {
+                console.error('Error deleting goal:', e);
+                alert('Error deleting goal');
+            }
+        }
+
         // Create rule
         async function createRule(event) {
             event.preventDefault();

@@ -240,6 +240,72 @@ def create_goal():
     
     return jsonify({"message": "Goal created successfully", "goal_id": goal.id}), 201
 
+
+@app.route('/api/goals/<int:goal_id>/update', methods=['PUT', 'PATCH'])
+@log_activity
+def update_goal_api(goal_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    goal = Goal.query.filter_by(id=goal_id, user_id=session['user_id'], is_active=True).first()
+    if not goal:
+        return jsonify({"error": "Goal not found"}), 404
+
+    data = request.get_json() or {}
+
+    name = data.get('name')
+    target_amount = data.get('target_amount')
+    description = data.get('description')
+    savings_pace = data.get('savings_pace')
+    image_url = data.get('image_url')
+
+    if name is not None:
+        goal.name = name
+    if target_amount is not None:
+        try:
+            goal.target_amount = decimalize(target_amount)
+        except Exception:
+            return jsonify({"error": "Invalid target_amount"}), 400
+    if description is not None:
+        goal.description = description
+    if savings_pace is not None:
+        goal.savings_pace = savings_pace
+    if image_url is not None:
+        goal.image_url = image_url
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Goal updated successfully",
+        "goal": {
+            "id": goal.id,
+            "name": goal.name,
+            "target_amount": float(goal.target_amount) if goal.target_amount else None,
+            "current_amount": float(goal.current_amount) if goal.current_amount else 0.0,
+            "description": goal.description,
+            "image_url": goal.image_url,
+            "savings_pace": goal.savings_pace,
+        }
+    })
+
+
+@app.route('/api/goals/<int:goal_id>/delete', methods=['DELETE'])
+@log_activity
+def delete_goal_api(goal_id):
+    if 'user_id' not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    goal = Goal.query.filter_by(id=goal_id, user_id=session['user_id'], is_active=True).first()
+    if not goal:
+        return jsonify({"error": "Goal not found"}), 404
+
+    # Soft-delete goal and deactivate associated rules
+    goal.is_active = False
+    SavingsRule.query.filter_by(goal_id=goal.id).update({SavingsRule.is_active: False})
+    db.session.commit()
+
+    return jsonify({"message": "Goal deleted"}), 200
+
 @app.route('/api/rules/create', methods=['POST'])
 @log_activity
 def create_rule():
