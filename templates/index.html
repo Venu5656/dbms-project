@@ -13,63 +13,247 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #e5e7eb;
+            position: relative;
+            overflow-x: hidden;
+            background: #020617;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: -25%;
+            z-index: -2;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(79,70,229,0.95) 0, transparent 55%),
+                radial-gradient(circle at 100% 0%, rgba(236,72,153,0.95) 0, transparent 60%),
+                radial-gradient(circle at 0% 100%, rgba(56,189,248,0.75) 0, transparent 55%),
+                radial-gradient(circle at 100% 100%, rgba(251,191,36,0.35) 0, transparent 55%),
+                #020617;
+            background-size: 180% 180%;
+            opacity: 0.9;
+            animation: dashboardGradientDrift 24s ease-in-out infinite alternate;
+        }
+
+        .background-orbs {
+            position: fixed;
+            inset: -10%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 999px;
+            filter: blur(32px);
+            opacity: 0.55;
+            mix-blend-mode: screen;
+            transform: translate3d(0,0,0);
+            transition: transform 0.35s ease-out;
+        }
+
+        .orb-purple {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle at 30% 20%, #a855f7, transparent 65%);
+            top: 5%;
+            left: -6%;
+        }
+
+        .orb-pink {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle at 70% 30%, #ec4899, transparent 65%);
+            top: -4%;
+            right: -8%;
+        }
+
+        .orb-blue {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle at 40% 70%, #38bdf8, transparent 65%);
+            bottom: -12%;
+            left: 10%;
+        }
+        
+        .page-shell {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px 32px;
+        }
+        
+        .app-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            backdrop-filter: blur(18px);
+            background: linear-gradient(to bottom, rgba(15,23,42,0.96), rgba(15,23,42,0.8));
+            border-bottom: 1px solid rgba(148,163,184,0.32);
+        }
+        
+        .app-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .app-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .app-brand-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            background: conic-gradient(from 160deg, #6366f1, #a855f7, #ec4899, #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(79,70,229,0.7);
+        }
+        
+        .app-brand-text-main {
+            font-size: 17px;
+            font-weight: 700;
+        }
+        
+        .app-brand-text-sub {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        
+        .app-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+        
+        .app-nav-label {
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.6);
+            background: rgba(15,23,42,0.65);
+            font-size: 12px;
+            color: #e5e7eb;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 8px 22px rgba(79,70,229,0.6);
+        }
+        
+        .logout-btn:hover {
+            box-shadow: 0 12px 30px rgba(79,70,229,0.85);
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
+
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(18px) scale(0.995);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .scroll-reveal.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
         
         .header {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
         
         .header h1 {
-            color: #333;
-            font-size: 28px;
+            font-size: 26px;
+            color: #f9fafb;
+            margin-bottom: 4px;
         }
         
-        .logout-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
+        .header-subtitle {
+            font-size: 13px;
+            color: #9ca3af;
         }
-        
-        .logout-btn:hover {
-            background: #5568d3;
+
+        .header-subtitle span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 12px rgba(34,197,94,0.9);
+            animation: pulse-live 1.7s ease-in-out infinite;
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
         }
         
         .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at top, rgba(148,163,255,0.24), transparent 70%),
+                        rgba(15,23,42,0.96);
+            padding: 22px 20px;
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.6);
+            box-shadow: 0 14px 38px rgba(15,23,42,0.9);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.08), transparent);
+            transform: translateX(-120%);
+            pointer-events: none;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 18px 46px rgba(15,23,42,0.95);
+            border-color: rgba(191,219,254,0.95);
+        }
+
+        .stat-card:hover::after {
+            transform: translateX(120%);
+            transition: transform 0.45s ease-out;
         }
         
         .stat-card h3 {
-            color: #666;
+            color: #9ca3af;
             font-size: 14px;
             margin-bottom: 10px;
             text-transform: uppercase;
@@ -78,19 +262,42 @@
         .stat-card .value {
             font-size: 32px;
             font-weight: bold;
-            color: #333;
+            color: #f9fafb;
+        }
+
+        .header-activity {
+            margin-bottom: 26px;
+            font-size: 12px;
+            color: #a5b4fc;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.9;
+        }
+
+        .header-activity span {
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+
+        @keyframes pulse-live {
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.6); opacity: 0.3; }
+            100% { transform: scale(1); opacity: 0.9; }
         }
         
         .goals-section {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: radial-gradient(circle at top, rgba(129,140,248,0.2), transparent 70%),
+                        rgba(15,23,42,0.96);
+            padding: 26px 24px 28px;
+            border-radius: 22px;
+            border: 1px solid rgba(148,163,184,0.7);
+            box-shadow: 0 18px 50px rgba(15,23,42,0.9);
             margin-bottom: 30px;
         }
         
         .goals-section h2 {
-            color: #333;
+            color: #e5e7eb;
             margin-bottom: 20px;
         }
         
@@ -101,74 +308,127 @@
         }
         
         .goal-card {
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            transition: transform 0.2s;
+            position: relative;
+            border: 1px solid rgba(148,163,184,0.65);
+            border-radius: 24px;
+            padding: 18px 18px 16px;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
             display: flex;
             flex-direction: column;
+            background: radial-gradient(circle at top left, rgba(236,72,153,0.6), transparent 55%),
+                        radial-gradient(circle at bottom right, rgba(37,99,235,0.5), transparent 60%),
+                        linear-gradient(145deg, #020617, #020617 40%, #0b1120 100%);
+            overflow: hidden;
+            animation: float-card 14s ease-in-out infinite;
+        }
+        
+        .goal-card::before,
+        .goal-card::after {
+            content: '';
+            position: absolute;
+            border-radius: 999px;
+            border: 1px dashed rgba(148,163,184,0.4);
+            inset: 16% 8% auto;
+            pointer-events: none;
+        }
+        
+        .goal-card::after {
+            inset: auto 18% 10%;
+            opacity: 0.6;
         }
         
         .goal-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 55px rgba(15,23,42,0.95);
+            border-color: rgba(191,219,254,0.95);
         }
         
         .goal-card h3 {
-            color: #333;
-            margin-bottom: 10px;
+            color: #f9fafb;
+            margin-bottom: 4px;
+            font-size: 18px;
         }
         
         .goal-card .description {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
+            color: #9ca3af;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .goal-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+
+        .goal-header-main {
+            min-width: 0;
         }
         
         .progress-bar {
-            background: #e0e0e0;
-            height: 20px;
-            border-radius: 10px;
+            background: rgba(15,23,42,0.9);
+            height: 10px;
+            border-radius: 999px;
             overflow: hidden;
-            margin-bottom: 10px;
+            margin: 6px 0 8px;
         }
         
         .progress-fill {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #4f46e5, #a855f7, #ec4899);
             height: 100%;
             transition: width 0.3s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
+            justify-content: flex-end;
+            color: #e5e7eb;
+            font-size: 11px;
+            font-weight: 600;
+            padding-right: 6px;
         }
         
         .goal-amounts {
             display: flex;
             justify-content: space-between;
-            font-size: 14px;
-            color: #666;
+            align-items: baseline;
+            font-size: 13px;
+            color: #9ca3af;
         }
         
         .goal-amounts .current {
-            color: #667eea;
-            font-weight: bold;
+            color: #f9fafb;
+            font-weight: 700;
+            font-size: 24px;
+        }
+
+        .goal-progress-text {
+            font-size: 12px;
+            color: #e5e7eb;
+            margin-top: 2px;
+            margin-bottom: 4px;
         }
         .goal-card-footer {
             margin-top: auto;
-            text-align: right;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #d1d5db;
+            padding-top: 10px;
+        }
+        .goal-card-footer span strong {
+            color: #f9fafb;
         }
         .goal-rules {
             margin-top: 12px;
             padding-top: 10px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid rgba(148,163,184,0.45);
             font-size: 13px;
         }
         .goal-rules-title {
             font-weight: 600;
-            color: #555;
+            color: #e5e7eb;
             margin-bottom: 6px;
         }
         .goal-rule-row {
@@ -179,53 +439,62 @@
             margin-bottom: 4px;
         }
         .goal-rule-main {
-            color: #444;
+            color: #e5e7eb;
         }
         .goal-rule-secondary {
-            color: #777;
+            color: #9ca3af;
             font-size: 12px;
         }
         
         .rules-section {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: radial-gradient(circle at top, rgba(216,180,254,0.18), transparent 70%),
+                        rgba(15,23,42,0.96);
+            padding: 26px 24px 28px;
+            border-radius: 22px;
+            border: 1px solid rgba(148,163,184,0.7);
+            box-shadow: 0 18px 50px rgba(15,23,42,0.9);
         }
         
         .rules-section h2 {
-            color: #333;
+            color: #e5e7eb;
             margin-bottom: 20px;
         }
         
         .rule-item {
-            padding: 15px;
-            border-left: 4px solid #667eea;
-            background: #f8f9fa;
+            padding: 14px 14px 13px;
+            border-left: 3px solid #6366f1;
+            background: rgba(15,23,42,0.9);
             margin-bottom: 10px;
-            border-radius: 5px;
+            border-radius: 12px;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
         }
         
         .rule-item h4 {
-            color: #333;
+            color: #e5e7eb;
             margin-bottom: 5px;
+        }
+
+        .rule-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(15,23,42,0.9);
+            border-left-color: #818cf8;
         }
         
         .rule-item .rule-details {
-            color: #666;
+            color: #9ca3af;
             font-size: 14px;
         }
         
         .loading {
             text-align: center;
             padding: 40px;
-            color: #666;
+            color: #9ca3af;
         }
         
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #999;
+            color: #9ca3af;
         }
         
         .empty-state h3 {
@@ -233,7 +502,7 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -247,13 +516,13 @@
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 10px 26px rgba(79,70,229,0.9);
         }
         
         .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: transparent;
+            color: #e5e7eb;
+            border: 1px solid rgba(148,163,184,0.75);
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
@@ -263,8 +532,20 @@
         }
         
         .btn-secondary:hover {
-            background: #667eea;
-            color: white;
+            background: rgba(148,163,184,0.18);
+            color: #f9fafb;
+        }
+
+        .goal-card-footer .btn-secondary {
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            border-color: rgba(148,163,184,0.85);
+            padding-inline: 18px;
+            font-size: 13px;
+        }
+        .goal-card-footer .btn-secondary:hover {
+            background: rgba(15,23,42,1);
+            box-shadow: 0 10px 26px rgba(15,23,42,0.9);
         }
         
         .modal {
@@ -285,14 +566,17 @@
         }
         
         .modal-content {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
+            background:
+                radial-gradient(circle at top, rgba(148,163,255,0.18), transparent 65%),
+                rgba(15,23,42,0.98);
+            padding: 32px 32px 28px;
+            border-radius: 20px;
+            max-width: 620px;
+            width: 92%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 28px 80px rgba(15,23,42,0.95);
+            border: 1px solid rgba(148,163,184,0.7);
         }
         
         .modal-header {
@@ -303,21 +587,21 @@
         }
         
         .modal-header h2 {
-            color: #333;
-            font-size: 24px;
+            color: #f9fafb;
+            font-size: 22px;
         }
         
         .close-btn {
             background: none;
             border: none;
-            font-size: 28px;
+            font-size: 24px;
             cursor: pointer;
-            color: #999;
+            color: #9ca3af;
             line-height: 1;
         }
         
         .close-btn:hover {
-            color: #333;
+            color: #e5e7eb;
         }
         
         .form-group {
@@ -327,7 +611,7 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: #e5e7eb;
             font-weight: 600;
             font-size: 14px;
         }
@@ -336,18 +620,27 @@
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            padding: 11px 12px;
+            border: 1px solid rgba(148,163,184,0.7);
+            border-radius: 10px;
             font-size: 14px;
-            transition: border-color 0.2s;
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+            background: rgba(15,23,42,0.9);
+            color: #e5e7eb;
+        }
+        
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #6b7280;
         }
         
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 1px rgba(99,102,241,0.7);
+            background: rgba(15,23,42,0.96);
         }
         
         .form-group textarea {
@@ -363,20 +656,23 @@
         
         .pace-option {
             padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            border: 1px solid rgba(148,163,184,0.55);
+            border-radius: 10px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
+            background: rgba(15,23,42,0.9);
+            color: #e5e7eb;
         }
         
         .pace-option:hover {
-            border-color: #667eea;
+            border-color: #818cf8;
+            background: radial-gradient(circle at top, rgba(129,140,248,0.18), transparent 70%);
         }
         
         .pace-option.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
+            border-color: #818cf8;
+            background: radial-gradient(circle at top, rgba(129,140,248,0.3), transparent 70%), rgba(15,23,42,0.95);
         }
         
         .pace-option input[type="radio"] {
@@ -385,13 +681,13 @@
         
         .pace-option .pace-name {
             font-weight: 600;
-            color: #333;
+            color: #e5e7eb;
             margin-bottom: 5px;
         }
         
         .pace-option .pace-desc {
             font-size: 12px;
-            color: #666;
+            color: #9ca3af;
         }
         
         .section-header {
@@ -529,25 +825,68 @@
         }
         
         .rule-type-card h4 {
-            color: #333;
+            color: #f9fafb;
             margin-bottom: 8px;
             font-size: 16px;
         }
         
         .rule-type-card p {
-            color: #666;
+            color: #e5e7eb;
             font-size: 13px;
+            margin: 0;
         }
-    </style>
+
+        @keyframes dashboardGradientDrift {
+            0% {
+                background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 50% 50%;
+            }
+            50% {
+                background-position: 12% 8%, 88% 0%, 8% 88%, 78% 62%, 50% 55%;
+            }
+            100% {
+                background-position: 24% 18%, 76% 0%, 16% 70%, 60% 40%, 50% 60%;
+            }
+        }
+
+        @keyframes float-card {
+            0%   { transform: translateY(0); }
+            50%  { transform: translateY(-4px); }
+            100% { transform: translateY(0); }
+        }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎯 Milestone Savings Dashboard</h1>
-            <a href="/logout" class="logout-btn">Logout</a>
+    <div class="background-orbs">
+        <div class="orb orb-purple" data-depth="0.04"></div>
+        <div class="orb orb-pink" data-depth="0.06"></div>
+        <div class="orb orb-blue" data-depth="0.03"></div>
+    </div>
+    <header class="app-navbar">
+        <div class="app-nav-inner">
+            <div class="app-brand">
+                <div class="app-brand-icon">🎯</div>
+                <div>
+                    <div class="app-brand-text-main">Milestone</div>
+                    <div class="app-brand-text-sub">Dashboard</div>
+                </div>
+            </div>
+            <div class="app-nav-right">
+                <span class="app-nav-label">Logged in</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
         </div>
-        
-        <div class="stats-grid">
+    </header>
+
+    <div class="page-shell">
+        <div class="container">
+            <div class="header">
+                <h1>Milestone Savings Dashboard</h1>
+                <div class="header-subtitle">
+                    <span><span class="header-live-dot"></span>Track your goals, rules, and automated progress in one view.</span>
+                </div>
+            </div>
+
+        <div class="stats-grid scroll-reveal">
             <div class="stat-card">
                 <h3>Total Goals</h3>
                 <div class="value" id="totalGoals">-</div>
@@ -561,8 +900,10 @@
                 <div class="value" id="activeRules">-</div>
             </div>
         </div>
+
+        <div class="header-activity" id="headerActivity">Your savings OS is ready. <span>Create a rule</span> to see automated deposits here.</div>
         
-        <div class="goals-section">
+        <div class="goals-section scroll-reveal">
             <div class="section-header">
                 <h2>Your Savings Goals</h2>
                 <button class="btn-primary" onclick="openCreateGoalModal()">+ Create New Goal</button>
@@ -570,7 +911,7 @@
             <div id="goalsContainer" class="loading">Loading goals...</div>
         </div>
         
-        <div class="rules-section">
+        <div class="rules-section scroll-reveal">
             <div class="section-header">
                 <h2>Savings Rules</h2>
                 <button class="btn-primary" onclick="openCreateRuleModal()">+ Add Savings Rule</button>
@@ -752,6 +1093,40 @@
             }
         }
 
+        function animateValue(el, from, to, duration, prefix = '', formatter = v => v.toString()) {
+            const start = performance.now();
+            function frame(now) {
+                const t = Math.min(1, (now - start) / duration);
+                const value = from + (to - from) * t;
+                el.textContent = prefix + formatter(value);
+                if (t < 1) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        function updateHeaderActivity(goalsCount, totalSaved, rulesCount) {
+            const el = document.getElementById('headerActivity');
+            if (!el) return;
+
+            if (!goalsCount && !rulesCount) {
+                el.innerHTML = 'Your savings OS is ready. <span>Create a rule</span> to see automated deposits here.';
+                return;
+            }
+
+            if (rulesCount && !goalsCount) {
+                el.innerHTML = `<span>${rulesCount}</span> active rule${rulesCount === 1 ? '' : 's'} waiting for a goal.`;
+                return;
+            }
+
+            if (goalsCount && !rulesCount) {
+                el.innerHTML = `<span>${goalsCount}</span> goal${goalsCount === 1 ? '' : 's'} created. Add a recurring rule to automate deposits.`;
+                return;
+            }
+
+            const savedLabel = `$${totalSaved.toFixed(2)}`;
+            el.innerHTML = `<span>${rulesCount}</span> active rule${rulesCount === 1 ? '' : 's'} powering <span>${goalsCount}</span> goal${goalsCount === 1 ? '' : 's'} · Total saved ${savedLabel}.`;
+        }
+
         function renderGoals() {
             const goals = cachedGoals || [];
             const container = document.getElementById('goalsContainer');
@@ -767,22 +1142,38 @@
             goals.forEach(goal => {
                 totalSaved += goal.current_amount;
                 const progress = Math.min(goal.progress, 100);
+                const remainingPct = Math.max(0, 100 - progress);
                 const goalRules = (rulesByGoal[goal.id] || []).slice(0, 3);
+
+                // Determine next payout label based on recurring rule frequency
+                const allRulesForGoal = rulesByGoal[goal.id] || [];
+                const recurringRule = allRulesForGoal.find(r => r.rule_type === 'recurring' && r.frequency);
+                let nextPayoutLabel = 'Not scheduled';
+
+                if (recurringRule) {
+                    if (recurringRule.frequency === 'daily') {
+                        nextPayoutLabel = 'tomorrow';
+                    } else if (recurringRule.frequency === 'weekly') {
+                        nextPayoutLabel = 'in 7 days';
+                    } else if (recurringRule.frequency === 'monthly') {
+                        nextPayoutLabel = 'in 28 days';
+                    }
+                }
 
                 html += `
                     <div class="goal-card">
-                        <div class="pace-badge ${goal.savings_pace || 'Moderate'}">${goal.savings_pace || 'Moderate'}</div>
-                        <h3>${goal.name}</h3>
-                        ${goal.description ? `<div class="description">${goal.description}</div>` : ''}
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progress}%">
-                                ${progress.toFixed(0)}%
+                        <div class="goal-header-row">
+                            <div class="goal-header-main">
+                                <h3>${goal.name}</h3>
+                                ${goal.description ? `<div class="description">${goal.description}</div>` : ''}
                             </div>
+                            <div class="pace-badge ${goal.savings_pace || 'Moderate'}">${goal.savings_pace || 'Moderate'}</div>
                         </div>
                         <div class="goal-amounts">
                             <span class="current">$${goal.current_amount.toFixed(2)}</span>
-                            <span class="target">/ $${goal.target_amount.toFixed(2)}</span>
+                            <span class="target">of $${goal.target_amount.toFixed(2)} target</span>
                         </div>
+                        <div class="goal-progress-text">${remainingPct.toFixed(0)}% remaining to your next milestone</div>
                         ${goalRules.length ? `
                         <div class="goal-rules">
                             <div class="goal-rules-title">Savings rules for this goal</div>
@@ -817,7 +1208,8 @@
                         </div>
                         ` : ''}
                         <div class="goal-card-footer">
-                            <button class="btn-secondary" onclick="window.location.href='/goals/${goal.id}'">Manage</button>
+                            <span>Next payout <strong>${nextPayoutLabel}</strong></span>
+                            <button class="btn-secondary" onclick="window.location.href='/goals/${goal.id}'">Open dashboard →</button>
                         </div>
                     </div>
                 `;
@@ -826,9 +1218,17 @@
             html += '</div>';
             container.innerHTML = html;
 
-            // Update stats
-            document.getElementById('totalGoals').textContent = goals.length;
-            document.getElementById('totalSaved').textContent = `$${totalSaved.toFixed(2)}`;
+            // Update stats with animation
+            const totalGoalsEl = document.getElementById('totalGoals');
+            const totalSavedEl = document.getElementById('totalSaved');
+
+            const prevGoals = parseInt(totalGoalsEl.textContent.replace(/[^0-9]/g, '') || '0', 10);
+            const prevSaved = parseFloat(totalSavedEl.textContent.replace(/[^0-9.]/g, '') || '0');
+
+            animateValue(totalGoalsEl, prevGoals, goals.length, 400, '', v => Math.round(v).toString());
+            animateValue(totalSavedEl, prevSaved, totalSaved, 500, '$', v => v.toFixed(2));
+
+            updateHeaderActivity(goals.length, totalSaved, (cachedRules || []).length);
         }
         
         // Fetch and display savings rules
@@ -865,6 +1265,7 @@
             if (!rules.length) {
                 container.innerHTML = '<div class="empty-state"><h3>No rules yet</h3><p>Create savings rules to automate your savings!</p></div>';
                 document.getElementById('activeRules').textContent = '0';
+                updateHeaderActivity((cachedGoals || []).length, (cachedGoals || []).reduce((acc, g) => acc + g.current_amount, 0), 0);
                 return;
             }
 
@@ -879,7 +1280,7 @@
 
                 html += `
                     <div style="margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 8px; color: #333; font-size: 16px;">${name}</h3>
+                        <h3 style="margin-bottom: 8px; color: #e5e7eb; font-size: 16px;">${name}</h3>
                 `;
 
                 group.forEach(rule => {
@@ -920,7 +1321,14 @@
             });
 
             container.innerHTML = html;
-            document.getElementById('activeRules').textContent = rules.length;
+
+            const activeRulesEl = document.getElementById('activeRules');
+            const prevRules = parseInt(activeRulesEl.textContent.replace(/[^0-9]/g, '') || '0', 10);
+            animateValue(activeRulesEl, prevRules, rules.length, 400, '', v => Math.round(v).toString());
+
+            const goalsCount = (cachedGoals || []).length;
+            const totalSaved = (cachedGoals || []).reduce((acc, g) => acc + g.current_amount, 0);
+            updateHeaderActivity(goalsCount, totalSaved, rules.length);
         }
         
         // Edit rule helpers
@@ -1100,6 +1508,31 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadGoals();
             loadRules();
+
+            // Scroll reveal for dashboard sections
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.18 });
+
+            document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+            // Parallax motion for background orbs
+            const orbs = Array.from(document.querySelectorAll('.background-orbs .orb'));
+            window.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth) - 0.5;
+                const y = (e.clientY / window.innerHeight) - 0.5;
+                orbs.forEach(orb => {
+                    const depth = parseFloat(orb.getAttribute('data-depth') || '0.04');
+                    const translateX = -x * depth * 200;
+                    const translateY = -y * depth * 120;
+                    orb.style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
+                });
+            });
         });
     </script>
 </body>

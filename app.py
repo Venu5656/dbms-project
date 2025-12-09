@@ -26,9 +26,24 @@ migrate.init_app(app, db)
 # Set up activity logging
 setup_activity_logging(app)
 
-# Create tables if they don't exist (for local development)
+# Create tables and seed a default demo user (for local development)
 with app.app_context():
     db.create_all()
+
+    # Ensure a demo user exists for quick login
+    demo_username = 'gowrisankar'
+    demo_email = 'gowrisankar@example.com'
+    demo_password = 'pass'
+
+    existing_demo = User.query.filter_by(username=demo_username).first()
+    if not existing_demo:
+        demo_user = User(
+            username=demo_username,
+            email=demo_email,
+            password_hash=generate_password_hash(demo_password)
+        )
+        db.session.add(demo_user)
+        db.session.commit()
 
 # Helper functions
 def decimalize(value):
@@ -69,6 +84,12 @@ def index():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     return render_template('index.html')
+
+
+@app.route('/home')
+def home_landing():
+    """Public marketing homepage with animations and product overview."""
+    return render_template('home.html')
 
 @app.route('/goals/<int:goal_id>')
 def goal_detail(goal_id):
@@ -385,87 +406,7 @@ def register():
         session['user_id'] = user.id
         return redirect(url_for('index'))
 
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Register - Milestone Savings App</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                margin: 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            }
-            .auth-container {
-                background: white;
-                padding: 40px;
-                border-radius: 10px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                width: 340px;
-            }
-            h2 {
-                margin-top: 0;
-                color: #333;
-                text-align: center;
-            }
-            input {
-                width: 100%;
-                padding: 12px;
-                margin: 10px 0;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                box-sizing: border-box;
-                font-size: 14px;
-            }
-            button {
-                width: 100%;
-                padding: 12px;
-                background: #667eea;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-                margin-top: 10px;
-            }
-            button:hover {
-                background: #5568d3;
-            }
-            .switch-link {
-                margin-top: 15px;
-                font-size: 13px;
-                text-align: center;
-            }
-            .switch-link a {
-                color: #667eea;
-                text-decoration: none;
-            }
-            .switch-link a:hover {
-                text-decoration: underline;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="auth-container">
-            <h2>🎯 Create Account</h2>
-            <form method="post">
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-                <button type="submit">Sign Up</button>
-            </form>
-            <div class="switch-link">
-                Already have an account? <a href="/login">Log in</a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -500,100 +441,7 @@ def login():
         
         return "Invalid credentials", 401
     
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Login - Milestone Savings App</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                margin: 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            }
-            .login-container {
-                background: white;
-                padding: 40px;
-                border-radius: 10px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                width: 300px;
-            }
-            h2 {
-                margin-top: 0;
-                color: #333;
-                text-align: center;
-            }
-            input {
-                width: 100%;
-                padding: 12px;
-                margin: 10px 0;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                box-sizing: border-box;
-                font-size: 14px;
-            }
-            button {
-                width: 100%;
-                padding: 12px;
-                background: #667eea;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-                margin-top: 10px;
-            }
-            button:hover {
-                background: #5568d3;
-            }
-            .hint {
-                margin-top: 20px;
-                padding: 10px;
-                background: #f0f0f0;
-                border-radius: 5px;
-                font-size: 12px;
-                color: #666;
-                text-align: center;
-            }
-            .secondary-btn {
-                display: inline-block;
-                padding: 10px 18px;
-                margin-top: 8px;
-                border-radius: 5px;
-                border: 1px solid #667eea;
-                background: #fff;
-                color: #667eea;
-                font-size: 13px;
-                font-weight: 600;
-                text-decoration: none;
-                cursor: pointer;
-            }
-            .secondary-btn:hover {
-                background: #667eea;
-                color: #fff;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="login-container">
-            <h2>🎯 Milestone Savings</h2>
-            <form method="post">
-                <input type="text" name="username" placeholder="Username" required>
-                <input type="password" name="password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            </form>
-            <div class="hint">
-                Don't have an account?<br>
-                <a class="secondary-btn" href="/register">Create Account</a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():

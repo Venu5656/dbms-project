@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Milestone Savings – Turn Habits Into Goals</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: #111827;
+            background: #050816;
+            overflow-x: hidden;
+        }
+
+        .page-wrapper {
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #4f46e5 0, transparent 55%),
+                        radial-gradient(circle at top right, #ec4899 0, transparent 60%),
+                        #020617;
+            color: #e5e7eb;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(18px);
+            background: linear-gradient(to bottom, rgba(15,23,42,0.95), rgba(15,23,42,0.75));
+            border-bottom: 1px solid rgba(148,163,184,0.25);
+        }
+
+        .nav-inner {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .brand-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            background: conic-gradient(from 160deg, #6366f1, #a855f7, #ec4899, #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 10px 30px rgba(79,70,229,0.7);
+        }
+
+        .brand-text-main {
+            font-size: 18px;
+        }
+
+        .brand-text-sub {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 14px;
+        }
+
+        .nav-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, #6366f1, #ec4899);
+            border-radius: 999px;
+            transition: width 0.18s ease-out;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-cta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-outline {
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.6);
+            color: #e5e7eb;
+            background: transparent;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.18s ease;
+        }
+
+        .btn-outline:hover {
+            background: rgba(148,163,184,0.15);
+            border-color: rgba(226,232,240,0.9);
+        }
+
+        .btn-pill {
+            padding: 9px 20px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 12px 30px rgba(79,70,229,0.55);
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .btn-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 45px rgba(79,70,229,0.8);
+        }
+
+        .btn-pill:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 22px rgba(79,70,229,0.6);
+        }
+
+        /* HERO */
+        .hero {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            gap: 40px;
+            align-items: center;
+        }
+
+        .hero-eyebrow {
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #a5b4fc;
+            margin-bottom: 10px;
+        }
+
+        .hero-title {
+            font-size: clamp(32px, 4vw, 44px);
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .hero-gradient-text {
+            background: linear-gradient(135deg, #e5e7eb, #c4b5fd, #f9a8d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 15px;
+            color: #9ca3af;
+            max-width: 420px;
+            margin-bottom: 22px;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 26px;
+        }
+
+        .hero-badge {
+            font-size: 11px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.4);
+            background: rgba(15,23,42,0.6);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 26px;
+        }
+
+        .hero-footnote {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .hero-footnote strong {
+            color: #e5e7eb;
+        }
+
+        .hero-visual {
+            position: relative;
+            min-height: 260px;
+        }
+
+        .hero-card {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            max-width: 380px;
+            height: 260px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: radial-gradient(circle at top left, rgba(244,114,182,0.4), transparent 55%),
+                        radial-gradient(circle at bottom right, rgba(59,130,246,0.5), transparent 55%),
+                        linear-gradient(145deg, #020617, #020617);
+            border: 1px solid rgba(148,163,184,0.45);
+            box-shadow: 0 22px 60px rgba(15,23,42,0.9);
+        }
+
+        .hero-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 20px 20px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .hero-card-goal {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .hero-card-pill {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.8);
+            border: 1px solid rgba(148,163,184,0.5);
+        }
+
+        .hero-card-amount-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+        }
+
+        .hero-card-balance {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .hero-card-target {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .hero-card-progress-bar {
+            position: relative;
+            width: 100%;
+            height: 9px;
+            border-radius: 999px;
+            background: rgba(15,23,42,0.9);
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .hero-card-progress-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 68%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #4f46e5, #a855f7, #ec4899);
+            box-shadow: 0 0 25px rgba(168,85,247,0.8);
+        }
+
+        .hero-card-progress-label {
+            font-size: 11px;
+            color: #d1d5db;
+            margin-bottom: 14px;
+        }
+
+        .hero-card-rules {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+
+        .hero-card-rule-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hero-card-rule-name {
+            color: #e5e7eb;
+        }
+
+        .hero-card-rule-meta {
+            color: #9ca3af;
+        }
+
+        .hero-card-rule-badge {
+            padding: 3px 7px;
+            border-radius: 999px;
+            font-size: 10px;
+            background: rgba(30,64,175,0.85);
+            color: #e0f2fe;
+        }
+
+        .hero-card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .hero-card-footer span strong {
+            color: #e5e7eb;
+        }
+
+        .hero-card-footer button {
+            border-radius: 999px;
+            border: none;
+            padding: 5px 11px;
+            font-size: 11px;
+            background: rgba(31,41,55,0.85);
+            color: #e5e7eb;
+            cursor: pointer;
+        }
+
+        .hero-orbit {
+            position: absolute;
+            inset: -40px;
+            pointer-events: none;
+        }
+
+        .hero-orbit::before,
+        .hero-orbit::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            border: 1px dashed rgba(148,163,184,0.4);
+            inset: 18% 4%;
+        }
+
+        .hero-orbit::after {
+            inset: 35% 18%;
+            opacity: 0.7;
+        }
+
+        .hero-orbit-dot {
+            position: absolute;
+            width: 9px;
+            height: 9px;
+            border-radius: 999px;
+            background: #f97316;
+            box-shadow: 0 0 10px rgba(249,115,22,0.9);
+        }
+
+        /* WAVE SECTION BACKDROP */
+        .wave-shell {
+            position: absolute;
+            inset: auto 0 -180px;
+            pointer-events: none;
+            opacity: 0.55;
+        }
+
+        .wave-shell svg {
+            width: 100%;
+            display: block;
+        }
+
+        /* SECTIONS */
+        .section {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 80px 20px 40px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-kicker {
+            font-size: 11px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #a5b4fc;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #9ca3af;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            position: relative;
+            padding: 22px 20px 20px;
+            border-radius: 18px;
+            background: radial-gradient(circle at top, rgba(99,102,241,0.2), transparent 60%),
+                        rgba(15,23,42,0.95);
+            border: 1px solid rgba(148,163,184,0.4);
+            overflow: hidden;
+        }
+
+        .feature-icon-shell {
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            background: radial-gradient(circle at 30% 0, #e5e7eb, #6366f1);
+            color: #020617;
+        }
+
+        .feature-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .feature-body {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .feature-accent-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #f97316;
+            right: 16px;
+            top: 18px;
+            box-shadow: 0 0 12px rgba(249,115,22,0.7);
+        }
+
+        /* HOW IT WORKS */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .step-card {
+            padding: 20px 18px 18px;
+            border-radius: 18px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.5);
+        }
+
+        .step-pill {
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(30,64,175,0.8);
+            color: #e0f2fe;
+            margin-bottom: 10px;
+        }
+
+        .step-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .step-text {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        /* CTA */
+        .cta {
+            text-align: center;
+            padding: 70px 20px 80px;
+        }
+
+        .cta-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 32px 22px;
+            border-radius: 24px;
+            border: 1px solid rgba(148,163,184,0.7);
+            background: radial-gradient(circle at top, rgba(96,165,250,0.15), transparent 65%),
+                        rgba(15,23,42,0.96);
+            box-shadow: 0 20px 55px rgba(15,23,42,0.85);
+        }
+
+        .cta-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .cta-text {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 18px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .footer {
+            border-top: 1px solid rgba(31,41,55,1);
+            padding: 18px 20px 26px;
+            font-size: 11px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        /* SCROLL ANIMATION */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 { transition-delay: 0.08s; }
+        .reveal-delay-2 { transition-delay: 0.16s; }
+        .reveal-delay-3 { transition-delay: 0.24s; }
+
+        /* FLOAT ANIMATION */
+        @keyframes float-soft {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .hero-card {
+            animation: float-soft 6s ease-in-out infinite;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: minmax(0, 1fr);
+                padding-top: 70px;
+            }
+
+            .hero-visual {
+                order: -1;
+                min-height: 260px;
+            }
+
+            .feature-grid,
+            .steps-grid {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero {
+                padding-top: 60px;
+                gap: 24px;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <header class="navbar">
+        <div class="nav-inner">
+            <div class="brand">
+                <div class="brand-icon">🎯</div>
+                <div>
+                    <div class="brand-text-main">Milestone</div>
+                    <div class="brand-text-sub">Savings OS</div>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="#hero" class="active">Home</a>
+                <a href="#features">Why Milestone</a>
+                <a href="#how-it-works">How it works</a>
+                <a href="#cta">Get started</a>
+            </nav>
+            <div class="nav-cta">
+                <a class="btn-outline" href="/login">Sign in</a>
+                <a class="btn-pill" href="/register">Create free account</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section id="hero" class="hero">
+            <div class="reveal">
+                <div class="hero-eyebrow">AUTOMATED HABIT-POWERED SAVINGS</div>
+                <h1 class="hero-title">
+                    The power of
+                    <span class="hero-gradient-text">small rules</span>
+                    for big goals.
+                </h1>
+                <p class="hero-subtitle">
+                    Milestone turns your everyday habits and guilty pleasures into
+                    automatic savings. Set smart rules once, and watch your goals
+                    fill up in the background.
+                </p>
+                <div class="hero-badges">
+                    <div class="hero-badge">💰 Rounds, rules & rewards in one place</div>
+                    <div class="hero-badge">📈 Live goal progress dashboard</div>
+                    <div class="hero-badge">🧠 Built for behavior, not budgeting</div>
+                </div>
+                <div class="hero-actions">
+                    <a class="btn-pill" href="/register">Start saving in 2 minutes</a>
+                    <a class="btn-outline" href="/login">View your dashboard</a>
+                </div>
+                <div class="hero-footnote">
+                    <strong>Pro tip:</strong> use rules like
+                    <em>guilty pleasure tax</em> or <em>habit reward</em> to save
+                    without thinking about it.
+                </div>
+            </div>
+
+            <div class="hero-visual reveal reveal-delay-1">
+                <div class="hero-card">
+                    <div class="hero-card-inner">
+                        <div class="hero-card-header">
+                            <div>
+                                <div class="hero-card-goal">Bali Getaway</div>
+                                <div style="font-size: 11px; color:#9ca3af;">Personal Travel Goal</div>
+                            </div>
+                            <div class="hero-card-pill">Moderate pace</div>
+                        </div>
+                        <div class="hero-card-amount-row">
+                            <div class="hero-card-balance">$1,260.00</div>
+                            <div class="hero-card-target">of $3,000 target</div>
+                        </div>
+                        <div class="hero-card-progress-bar">
+                            <div class="hero-card-progress-fill"></div>
+                        </div>
+                        <div class="hero-card-progress-label">42% to your next milestone</div>
+                        <div class="hero-card-rules">
+                            <div class="hero-card-rule-row">
+                                <div>
+                                    <div class="hero-card-rule-name">🍕 Guilty pleasure tax</div>
+                                    <div class="hero-card-rule-meta">$5 every time you order delivery</div>
+                                </div>
+                                <div class="hero-card-rule-badge">Auto-save</div>
+                            </div>
+                            <div class="hero-card-rule-row">
+                                <div>
+                                    <div class="hero-card-rule-name">🎯 Morning workout reward</div>
+                                    <div class="hero-card-rule-meta">$3 per completed session</div>
+                                </div>
+                                <div class="hero-card-rule-badge" style="background:rgba(147,51,234,0.85);">Habit</div>
+                            </div>
+                            <div class="hero-card-rule-row">
+                                <div>
+                                    <div class="hero-card-rule-name">💰 Friday recurring</div>
+                                    <div class="hero-card-rule-meta">$20 every week</div>
+                                </div>
+                                <div class="hero-card-rule-badge" style="background:rgba(22,163,74,0.85);">Recurring</div>
+                            </div>
+                        </div>
+                        <div class="hero-card-footer">
+                            <span>Next payout in <strong>3 days</strong></span>
+                            <button>Open dashboard →</button>
+                        </div>
+                    </div>
+                    <div class="hero-orbit">
+                        <div class="hero-orbit-dot" style="top:20%; left:4%;"></div>
+                        <div class="hero-orbit-dot" style="bottom:16%; right:8%; background:#22c55e;"></div>
+                    </div>
+                </div>
+                <div class="wave-shell">
+                    <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="waveGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#6366f1" stop-opacity="0.7" />
+                                <stop offset="50%" stop-color="#a855f7" stop-opacity="0.75" />
+                                <stop offset="100%" stop-color="#ec4899" stop-opacity="0.8" />
+                            </linearGradient>
+                        </defs>
+                        <path fill="url(#waveGrad)" d="M0,256L48,245.3C96,235,192,213,288,192C384,171,480,149,576,149.3C672,149,768,171,864,181.3C960,192,1056,192,1152,181.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" />
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section id="features" class="section reveal reveal-delay-1">
+            <div class="section-header">
+                <div class="section-kicker">WHY MILESTONE</div>
+                <h2 class="section-title">Savings that feels almost invisible</h2>
+                <p class="section-subtitle">
+                    Instead of rigid budgets, Milestone uses tiny rules that attach to
+                    what you already do – from streaming binges to gym streaks – and
+                    quietly routes money into your goals.
+                </p>
+            </div>
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <div class="feature-icon-shell">⚡</div>
+                    <div class="feature-accent-dot"></div>
+                    <h3 class="feature-title">Smart savings rules</h3>
+                    <p class="feature-body">
+                        Create rules for recurring deposits, guilty pleasure taxes,
+                        and habit rewards. You choose the behavior; we handle the
+                        math.
+                    </p>
+                </article>
+                <article class="feature-card reveal reveal-delay-1">
+                    <div class="feature-icon-shell">📊</div>
+                    <div class="feature-accent-dot" style="background:#22c55e;"></div>
+                    <h3 class="feature-title">Live goal dashboard</h3>
+                    <p class="feature-body">
+                        Track every goal in one place with progress bars, recent
+                        activity, and insights that surface your most powerful rules.
+                    </p>
+                </article>
+                <article class="feature-card reveal reveal-delay-2">
+                    <div class="feature-icon-shell">🧠</div>
+                    <div class="feature-accent-dot" style="background:#eab308;"></div>
+                    <h3 class="feature-title">Built for real life</h3>
+                    <p class="feature-body">
+                        Life is messy. Pause rules, adjust paces, or top-up
+                        manually whenever you like – no guilt, just momentum.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <!-- HOW IT WORKS -->
+        <section id="how-it-works" class="section reveal">
+            <div class="section-header">
+                <div class="section-kicker">HOW IT WORKS</div>
+                <h2 class="section-title">From idea to funded goal in three steps</h2>
+                <p class="section-subtitle">
+                    Milestone is designed to feel like a tiny habit itself. Five
+                    minutes of setup today; hundreds of micro-savings working for you
+                    this month.
+                </p>
+            </div>
+            <div class="steps-grid">
+                <article class="step-card">
+                    <div class="step-pill">1 · Define your milestones</div>
+                    <h3 class="step-title">Create goals that feel exciting</h3>
+                    <p class="step-text">
+                        Add goals like "Europe trip" or "Emergency cushion", choose
+                        a savings pace, and let Milestone calculate the path for you.
+                    </p>
+                </article>
+                <article class="step-card reveal reveal-delay-1">
+                    <div class="step-pill">2 · Attach smart rules</div>
+                    <h3 class="step-title">Turn habits into auto-savings</h3>
+                    <p class="step-text">
+                        Set recurring deposits, habit rewards, and fun taxes on your
+                        guilty pleasures so progress happens in the background.
+                    </p>
+                </article>
+                <article class="step-card reveal reveal-delay-2">
+                    <div class="step-pill">3 · Watch the graph climb</div>
+                    <h3 class="step-title">Stay motivated with clear feedback</h3>
+                    <p class="step-text">
+                        Your dashboard shows real-time progress, streaks, and how
+                        much each rule has contributed over time.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section id="cta" class="cta reveal">
+            <div class="cta-inner">
+                <h2 class="cta-title">Ready to give your future self a raise?</h2>
+                <p class="cta-text">
+                    Sign up in minutes, add your first goal, and create one rule.
+                    Thats all you need today. The rest is just your life, funding
+                    your dreams in the background.
+                </p>
+                <div class="cta-buttons">
+                    <a class="btn-pill" href="/register">Create free account</a>
+                    <a class="btn-outline" href="/login">I already use Milestone</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        Milestone Savings · Built for experiments, habits, and happy future-you.
+    </footer>
+</div>
+
+<script>
+    // Simple scroll reveal using IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.18
+    });
+
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+    // Nav active state on scroll
+    const sections = [
+        { id: 'hero', link: null },
+        { id: 'features', link: null },
+        { id: 'how-it-works', link: null },
+        { id: 'cta', link: null }
+    ];
+
+    sections.forEach((s) => {
+        s.link = document.querySelector('.nav-links a[href="#' + s.id + '"]');
+    });
+
+    function updateActiveNav() {
+        let currentId = 'hero';
+        const scrollY = window.scrollY + 120;
+        sections.forEach((s) => {
+            const el = document.getElementById(s.id);
+            if (!el) return;
+            const top = el.offsetTop;
+            if (scrollY >= top) {
+                currentId = s.id;
+            }
+        });
+        sections.forEach((s) => {
+            if (!s.link) return;
+            if (s.id === currentId) {
+                s.link.classList.add('active');
+            } else {
+                s.link.classList.remove('active');
+            }
+        });
+    }
+
+    window.addEventListener('scroll', updateActiveNav);
+    window.addEventListener('load', updateActiveNav);
+</script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create account · Milestone Savings</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: radial-gradient(circle at top left, #4f46e5 0, transparent 55%),
+                        radial-gradient(circle at top right, #ec4899 0, transparent 60%),
+                        #020617;
+            min-height: 100vh;
+            color: #e5e7eb;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .background-orbs {
+            position: fixed;
+            inset: -10%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 999px;
+            filter: blur(32px);
+            opacity: 0.6;
+            mix-blend-mode: screen;
+            transform: translate3d(0,0,0);
+            transition: transform 0.35s ease-out;
+        }
+
+        .orb-left {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle at 30% 20%, #6366f1, transparent 65%);
+            top: -6%;
+            left: -10%;
+        }
+
+        .orb-bottom {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle at 40% 80%, #22c55e, transparent 65%);
+            bottom: -18%;
+            left: 4%;
+        }
+
+        .orb-right {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle at 60% 30%, #ec4899, transparent 65%);
+            top: -10%;
+            right: -8%;
+        }
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(18px);
+            background: linear-gradient(to bottom, rgba(15,23,42,0.95), rgba(15,23,42,0.75));
+            border-bottom: 1px solid rgba(148,163,184,0.25);
+        }
+        .nav-inner {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:0.03em; }
+        .brand-icon {
+            width: 30px; height: 30px; border-radius: 999px;
+            background: conic-gradient(from 160deg, #6366f1, #a855f7, #ec4899, #6366f1);
+            display:flex; align-items:center; justify-content:center;
+            color:#fff; font-size:18px;
+            box-shadow:0 10px 30px rgba(79,70,229,0.7);
+        }
+        .brand-text-main { font-size: 18px; }
+        .brand-text-sub { font-size: 11px; text-transform: uppercase; color:#9ca3af; }
+        .nav-links { display:flex; gap:22px; font-size:13px; }
+        .nav-links a { color:#d1d5db; text-decoration:none; }
+        .nav-cta { display:flex; gap:10px; align-items:center; }
+        .btn-pill, .btn-outline {
+            padding: 8px 18px; border-radius: 999px; font-size:13px;
+            text-decoration:none; cursor:pointer; border:none; display:inline-flex;
+            align-items:center; justify-content:center;
+        }
+        .btn-pill {
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            color:#fff; font-weight:600;
+            box-shadow:0 12px 30px rgba(79,70,229,0.55);
+        }
+        .btn-outline {
+            border:1px solid rgba(148,163,184,0.6);
+            color:#e5e7eb; background:transparent;
+        }
+        .shell {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 60px 20px 40px;
+            display:flex;
+            gap:40px;
+            align-items:flex-start;
+        }
+        .tagline {
+            flex:1;
+            font-size:14px;
+            color:#9ca3af;
+            position: relative;
+        }
+        .tagline h1 {
+            font-size:26px;
+            margin-bottom:10px;
+        }
+        .tagline p {
+            max-width: 360px;
+        }
+
+        .visual-stack {
+            margin-top: 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 360px;
+        }
+
+        .mini-card {
+            padding: 14px 16px 13px;
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.55);
+            background: radial-gradient(circle at top left, rgba(236,72,153,0.4), transparent 60%),
+                        rgba(15,23,42,0.96);
+            box-shadow: 0 14px 40px rgba(15,23,42,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            animation: floatRegisterCard 16s ease-in-out infinite;
+        }
+
+        .mini-card-secondary {
+            padding: 12px 14px 11px;
+            border-radius: 16px;
+            border: 1px solid rgba(148,163,184,0.45);
+            background: radial-gradient(circle at top right, rgba(59,130,246,0.38), transparent 60%),
+                        rgba(15,23,42,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            animation: floatRegisterCard 18s ease-in-out infinite reverse;
+        }
+
+        .mini-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 4px;
+        }
+
+        .mini-card-sub {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .mini-metric-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .metric-chip {
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid rgba(148,163,184,0.6);
+            color: #e5e7eb;
+        }
+
+        .checklist {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #e5e7eb;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .check-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            background: rgba(34,197,94,0.15);
+            border: 1px solid rgba(34,197,94,0.7);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+        .auth-card {
+            flex:1;
+            max-width: 400px;
+            border-radius: 22px;
+            padding: 28px 24px 26px;
+            background: radial-gradient(circle at top, rgba(147,51,234,0.27), transparent 60%),
+                        rgba(15,23,42,0.96);
+            border:1px solid rgba(148,163,184,0.75);
+            box-shadow:0 18px 50px rgba(15,23,42,0.9);
+        }
+        .auth-title { font-size:20px; font-weight:700; margin-bottom:4px; }
+        .auth-subtitle { font-size:13px; color:#9ca3af; margin-bottom:18px; }
+        label { display:block; font-size:12px; margin-bottom:6px; color:#e5e7eb; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width:100%; padding:10px 11px; border-radius:10px;
+            border:1px solid rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.85); color:#e5e7eb;
+            font-size:13px; margin-bottom:14px;
+        }
+        input:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 1px rgba(99,102,241,0.7); }
+        .primary-btn {
+            width:100%; margin-top:4px; padding:10px 0;
+            border-radius:999px; border:none; cursor:pointer;
+            background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899);
+            color:#fff; font-weight:600; font-size:14px;
+        }
+        .form-benefits {
+            margin-top: 12px;
+            font-size: 11px;
+            color: #9ca3af;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            justify-content: space-between;
+        }
+
+        .form-benefit-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-benefit-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 10px rgba(34,197,94,0.85);
+        }
+
+        .below-text { margin-top:14px; font-size:12px; color:#9ca3af; text-align:center; }
+        .below-text a { color:#e5e7eb; text-decoration:underline; }
+
+        @keyframes floatRegisterCard {
+            0%   { transform: translateY(0); }
+            50%  { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+        @media (max-width: 800px) {
+            .shell { flex-direction:column; padding-top:40px; }
+            .tagline { text-align:center; }
+            .background-orbs {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="background-orbs">
+    <div class="orb orb-left" data-depth="0.05"></div>
+    <div class="orb orb-bottom" data-depth="0.03"></div>
+    <div class="orb orb-right" data-depth="0.06"></div>
+</div>
+
+<header class="navbar">
+    <div class="nav-inner">
+        <div class="brand">
+            <div class="brand-icon">🎯</div>
+            <div>
+                <div class="brand-text-main">Milestone</div>
+                <div class="brand-text-sub">Savings OS</div>
+            </div>
+        </div>
+        <nav class="nav-links">
+            <a href="/home">Home</a>
+        </nav>
+        <div class="nav-cta">
+            <a href="/login" class="btn-outline">Sign in</a>
+        </div>
+    </div>
+</header>
+
+<main class="shell">
+    <section class="tagline">
+        <h1>Create your Milestone workspace.</h1>
+        <p>Set up an account so you can create goals, attach savings rules, and track your progress across devices.</p>
+
+        <div class="visual-stack">
+            <div class="mini-card">
+                <div>
+                    <div class="mini-card-title">Kickstart your first goal</div>
+                    <div class="mini-card-sub">Savings buckets for trips, gadgets, emergencies, and more.</div>
+                </div>
+                <div class="mini-metric-row">
+                    <span class="metric-chip">Goal templates included</span>
+                </div>
+            </div>
+            <div class="mini-card-secondary">
+                <div>
+                    <div class="mini-card-title">What you get on day one</div>
+                    <div class="checklist">
+                        <div class="checklist-item"><span class="check-icon">✓</span><span>Personal workspace with secure login</span></div>
+                        <div class="checklist-item"><span class="check-icon">✓</span><span>Unlimited goals and savings rules</span></div>
+                        <div class="checklist-item"><span class="check-icon">✓</span><span>Visual dashboards & progress charts</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="auth-card">
+        <h2 class="auth-title">Create account</h2>
+        <p class="auth-subtitle">Its free to start. You can always add more goals and rules later.</p>
+        <form method="post">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" required />
+
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required />
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required />
+
+            <label for="confirm_password">Confirm password</label>
+            <input id="confirm_password" name="confirm_password" type="password" required />
+
+            <button type="submit" class="primary-btn">Create free account</button>
+        </form>
+        <div class="form-benefits">
+            <div class="form-benefit-item"><span class="form-benefit-dot"></span><span>No credit card required</span></div>
+            <div class="form-benefit-item"><span class="form-benefit-dot"></span><span>Built for recurring savings</span></div>
+            <div class="form-benefit-item"><span class="form-benefit-dot"></span><span>Cancel anytime</span></div>
+        </div>
+        <div class="below-text">
+            Already have an account? <a href="/login">Sign in instead</a>
+        </div>
+    </section>
+</main>
+<script>
+    const orbs = Array.from(document.querySelectorAll('.background-orbs .orb'));
+    window.addEventListener('mousemove', (e) => {
+        const x = (e.clientX / window.innerWidth) - 0.5;
+        const y = (e.clientY / window.innerHeight) - 0.5;
+        orbs.forEach(orb => {
+            const depth = parseFloat(orb.getAttribute('data-depth') || '0.04');
+            const translateX = -x * depth * 200;
+            const translateY = -y * depth * 120;
+            orb.style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
+        });
+    });
+</script>
+
+</body>
+</html>
