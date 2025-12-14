@@ -56,3 +56,7 @@ migrations/
 # Temporary files
 create_template.py
 check_user.py
+
+# Uploaded files
+static/uploads/*
+!static/uploads/.gitkeep
